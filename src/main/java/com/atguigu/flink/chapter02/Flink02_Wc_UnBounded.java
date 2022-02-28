@@ -52,12 +52,3 @@ public class Flink02_Wc_UnBounded {
     
     }
 }
-/*
-spark rdd:
-    1. 创建一个上下文对象
-    2. 通过上下文对象得到一个rdd
-    3. 对rdd做各种转换
-    4. 行动算子
-    5. 启动上下文对象
-
- */

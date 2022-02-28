@@ -13,6 +13,7 @@ import org.apache.flink.util.Collector;
  */
 public class Flink03_Wc_UnBounded_Lambda {
     public static void main(String[] args) throws Exception {
+        System.out.println("main.............");
         // 1. 创建一个流的执行环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         env.setParallelism(1);
@@ -42,7 +43,7 @@ public class Flink03_Wc_UnBounded_Lambda {
 /*
 在flink中, 运行的时候, flink框架不要明确知道泛型的类型
 1. 使用匿名内部类  推荐
-2. 使用外部类 当抽象方式实现特别复杂
+2. 使用外部类 当抽象方法实现特别复杂
 3. 使用lambda, 但是必须要明确的指定泛型信息  不推荐
 
  */

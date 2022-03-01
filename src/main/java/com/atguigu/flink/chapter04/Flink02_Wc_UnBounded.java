@@ -1,4 +1,4 @@
-package com.atguigu.flink.chapter03;
+package com.atguigu.flink.chapter04;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.MapFunction;

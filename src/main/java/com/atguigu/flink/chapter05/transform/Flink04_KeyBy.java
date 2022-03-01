@@ -41,5 +41,36 @@ public class Flink04_KeyBy {
     }
 }
 /*
-flatMap可以替换 map和filter
+new KeyGroupStreamPartitioner<>(
+                                keySelector,
+                                StreamGraphGenerator.DEFAULT_LOWER_BOUND_MAX_PARALLELISM))  // 128
+
+
+
+KeyGroupRangeAssignment
+        .assignKeyToParallelOperator(
+                // 奇数/偶数, 128, 2
+                key, maxParallelism, numberOfChannels);
+
+
+
+computeOperatorIndexForKeyGroup(
+                // 128, 2, [0,127]
+                maxParallelism, parallelism, assignToKeyGroup(key, maxParallelism));
+
+                        // key, 128
+                        assignToKeyGroup(key, maxParallelism)
+
+                            // hashCode,  128
+                            computeKeyGroupForKeyHash(key.hashCode(), maxParallelism);
+                                MathUtils.murmurHash(keyHash) % maxParallelism;  // [0,127]
+                                // 双重hash
+
+        [0,127] * 2 / 128    = [0,254]/128     0, 1
+return keyGroupId * parallelism / maxParallelism;
+
+>=64  1
+<64   0
+
+
  */

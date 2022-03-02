@@ -19,8 +19,9 @@ public class Flink09_Sum {
         DataStreamSource<WaterSensor> stream = env.fromElements(
                 new WaterSensor("sensor_1", 1L, 10),
                 new WaterSensor("sensor_1", 3L, 30),
+                new WaterSensor("sensor_1", 4L, 30),
                 new WaterSensor("sensor_1", 2L, 20),
-                new WaterSensor("sensor_1", 4L, 40),
+                new WaterSensor("sensor_1", 5L, 40),
                 new WaterSensor("sensor_2", 4L, 100),
                 new WaterSensor("sensor_2", 5L, 200)
         );
@@ -33,7 +34,7 @@ public class Flink09_Sum {
                 .keyBy(WaterSensor::getId)
 //                .sum("vc")
 //                .max("vc")
-                .min("vc")
+                .maxBy("vc", false)
                 .print();
 
 
@@ -48,5 +49,13 @@ public class Flink09_Sum {
 除了分组字段和聚合字段, 其他字段的值是取的第一个
 
 只能针对数字进行聚合
-sum max min
+    sum max min
+
+    maxBy minBy
+        其他字段会随着最大值或最小值来取
+
+        当最大或最小相等的时候, 默认取第一个
+        传入一个false, 则会取最新的
+
+
  */

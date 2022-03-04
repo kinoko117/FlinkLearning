@@ -54,14 +54,11 @@ public class Flink02_UV {
                         }*/
 
                         if ("pv".equals(ctx.getCurrentKey())) {
-
                             // 返回值是true表示这次是新增, 否则就是一个旧元素
                             if (userIds.add(ub.getUserId())) {
 
                                 out.collect((long) userIds.size());
                             }
-
-
                         }
                     }
                 })

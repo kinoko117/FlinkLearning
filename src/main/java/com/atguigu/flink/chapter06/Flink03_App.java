@@ -1,6 +1,8 @@
 package com.atguigu.flink.chapter06;
 
 import com.atguigu.flink.bean.MarketingUserBehavior;
+import org.apache.flink.api.common.functions.MapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
@@ -17,8 +19,19 @@ public class Flink03_App {
         conf.setInteger("rest.port", 2000);
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(conf);
         env.setParallelism(1);
+        // 不同渠道不同行为的情况
+        env
+                .addSource(new AppSource())
+                .map(new MapFunction<MarketingUserBehavior, Tuple2<String, Long>>() {
+                    @Override
+                    public Tuple2<String, Long> map(MarketingUserBehavior value) throws Exception {
+                        return Tuple2.of(value.getChannel() + "_" + value.getBehavior(), 1L);
+                    }
+                })
+                .keyBy(t -> t.f0)
+                .sum(1)
+                .print();
 
-        env.addSource(new AppSource()).print();
 
 
         try {
@@ -50,7 +63,7 @@ public class Flink03_App {
                 String behavior = behaviors[random.nextInt(behaviors.length)];
                 String channel = channels[random.nextInt(channels.length)];
                 Long timestamp = System.currentTimeMillis();
-                ctx.collect(new MarketingUserBehavior(userId,behavior, channel, timestamp ));
+                ctx.collect(new MarketingUserBehavior(userId, behavior, channel, timestamp));
                 Thread.sleep(300);
             }
 

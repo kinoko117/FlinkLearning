@@ -52,7 +52,7 @@ public class Flink05_Window_Process_Function {
                             @Override
                             public void process(String key,
                                                 Context ctx,
-                                                Iterable<Tuple2<String, Long>> elements, // 这个集合有且仅有一个元素, 就是聚合函数计算的最终结果
+                                                Iterable<Tuple2<String, Long>> elements, // 这个集合有且仅有一个元素, 就是前面聚合函数计算的最终结果
                                                 Collector<String> out) throws Exception {
                                 Date start = new Date(ctx.window().getStart());
                                 Date end = new Date(ctx.window().getEnd());

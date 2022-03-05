@@ -5,12 +5,14 @@ import com.atguigu.flink.util.AtguiguUtil;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.configuration.Configuration;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
+import org.apache.flink.util.OutputTag;
 
 import java.time.Duration;
 import java.util.List;
@@ -19,14 +21,14 @@ import java.util.List;
  * @Author lzc
  * @Date 2022/3/5 10:00
  */
-public class Flink03_Watermark_3 {
+public class Flink05_Watermark_Output {
     public static void main(String[] args) {
         Configuration conf = new Configuration();
         conf.setInteger("rest.port", 2000);
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(conf);
-        env.setParallelism(2);
+        env.setParallelism(1);
 
-        env
+        SingleOutputStreamOperator<String> main = env
                 .socketTextStream("hadoop162", 9999)
                 .map(value -> {
                     String[] data = value.split(",");
@@ -50,6 +52,7 @@ public class Flink03_Watermark_3 {
                 )
                 .keyBy(WaterSensor::getId)
                 .window(TumblingEventTimeWindows.of(Time.seconds(5)))
+                .sideOutputLateData(new OutputTag<WaterSensor>("late"){})
                 .process(new ProcessWindowFunction<WaterSensor, String, String, TimeWindow>() {
                     @Override
                     public void process(String key,
@@ -60,8 +63,10 @@ public class Flink03_Watermark_3 {
                         out.collect(key + "  " + ctx.window() + "  " + list);
 
                     }
-                })
-                .print();
+                });
+
+        main.print("main");
+        main.getSideOutput(new OutputTag<WaterSensor>("late"){}).print("late");
 
 
         try {
@@ -72,25 +77,17 @@ public class Flink03_Watermark_3 {
     }
 }
 /*
-new BoundedOutOfOrdernessWatermarks<>(maxOutOfOrderness);
 
-this.maxTimestamp = Long.MIN_VALUE + outOfOrdernessMillis + 1;
+flink 解决乱序数据:
+1. 事件时间+水印时间
 
-每来一个元素执行一次
-public void onEvent
-    maxTimestamp = Math.max(maxTimestamp, eventTimestamp);
-    计算最大时间戳
+2. 允许迟到
+    当水印到了窗口的关闭时间, 先对窗口内的数据进行计算, 但是窗口不关闭,
+     如果在允许时间内来的数据, 还可以进入这个窗口, 参与计算. 当超过这个允许时间后再斟酌的关闭窗口
 
-周期性的执行  默认 200ms
-public void onPeriodicEmit
-    output.emitWatermark(new Watermark(maxTimestamp - outOfOrdernessMillis - 1));
+     .allowedLateness(Time.seconds(2))
 
-
-
----
-多并行度下水印不更新:
-1. 把并行度改成1
-2. 解决source的数据倾斜
-3. 强制更新水印
-    添加一个设置
+3. 侧输出流
+    当窗口真正关闭之后, 如果仍然有迟到数据, 则把迟到放入到侧输出流中.
+    侧输出流的第一个作用:装载真正迟到的数据(所在窗口关闭)
  */

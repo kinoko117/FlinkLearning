@@ -44,6 +44,7 @@ public class Flink03_Timer_Practice {
                     public void processElement(WaterSensor value,
                                                Context ctx,
                                                Collector<String> out) throws Exception {
+
                         /*
                         当第一条数据来的时候, 注册一个定时器5s后触发的定时器
                         后面的数据如果是上升, 则什么都不坐
@@ -51,6 +52,7 @@ public class Flink03_Timer_Practice {
                          */
                         if (isFirst) {
                             isFirst = false;
+                            System.out.println(value.getTs() + "  " + ctx.timestamp());
                             // 注册定时器
                             ts = value.getTs() + 5000;
                             System.out.println("第一条数据过来: 注册定时器 " + ts);

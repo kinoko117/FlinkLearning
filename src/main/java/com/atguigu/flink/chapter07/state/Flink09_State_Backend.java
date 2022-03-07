@@ -52,6 +52,7 @@ public class Flink09_State_Backend {
         // 3.2 新
         env.setStateBackend(new EmbeddedRocksDBStateBackend());
         env.getCheckpointConfig().setCheckpointStorage("hdfs://hadoop162:8020/ck3");
+//        env.getCheckpointConfig().setCheckpointStorage(new JobManagerCheckpointStorage());
 
 
         env

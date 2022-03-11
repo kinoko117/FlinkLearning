@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
-import static org.apache.flink.streaming.api.environment.CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION;
-
 /**
  * @Author lzc
  * @Date 2022/3/7 9:12
@@ -57,7 +55,7 @@ public class Flink10_Kafka_Flink_Kafka {
         env.getCheckpointConfig().setCheckpointTimeout(10 * 1000);
         // 程序被取消之后, checkpoint数据仍然保留
 //        env.getCheckpointConfig().enableExternalizedCheckpoints(RETAIN_ON_CANCELLATION);
-        env.getCheckpointConfig().setExternalizedCheckpointCleanup(RETAIN_ON_CANCELLATION);
+//        env.getCheckpointConfig().setExternalizedCheckpointCleanup(RETAIN_ON_CANCELLATION);
 
 
         Properties sourceProps = new Properties();

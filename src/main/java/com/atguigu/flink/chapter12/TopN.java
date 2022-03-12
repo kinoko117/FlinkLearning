@@ -66,11 +66,40 @@ public class TopN {
         tEnv.createTemporaryView("t1", t1);
         
         // 3. 使用 over 窗口, 对同一个窗口内的元素安装点击量降序排列, 分配名次
+        // rank  row_number dense_rank flink 目前只支持 row_number
+        Table t2 = tEnv.sqlQuery("select " +
+                                        " stt, edt, itemId, ct, " +
+                                        " row_number() over(partition by edt order by ct desc) rn " +
+                                        "from t1");
+        tEnv.createTemporaryView("t2", t2);
         
         // 4. 过滤出来名次小于等于3的
-        
-        
+        Table t3 = tEnv.sqlQuery("select " +
+                                        " edt w_end, " +
+                                        " itemId item_id, " +
+                                        " ct item_count, " +
+                                        " rn rk " +
+                                        " from t2 where rn<=3");
+    
+    
         // 5. 写入到Mysql中
+        // 5.1 在flink建动态表与mysql中的表关联
+        tEnv.executeSql("CREATE TABLE `hot_item` (" +
+                            "  `w_end` timestamp," +
+                            "  `item_id` bigint," +
+                            "  `item_count` bigint," +
+                            "  `rk` bigint," +
+                            "  PRIMARY KEY (`w_end`,`rk`)not enforced" +
+                            ")with(" +
+                            "   'connector' = 'jdbc', " +
+                            "   'url' = 'jdbc:mysql://hadoop162:3306/flink_sql'," +
+                            "   'table-name' = 'hot_item', " +
+                            "   'username' = 'root', " +
+                            "   'password' = 'aaaaaa'" +
+                            ")");
+        
+        // 5.2 把结果写入到动态表, 则自动会写入到mysql
+        t3.executeInsert("hot_item");
         
         
     }

@@ -73,7 +73,7 @@ public class Flink12_Window_TVF_4 {
                         "from table( tumble(table person, descriptor(ts), interval '5' second) )" +
                         "group by window_start, window_end, cube(a,b,c,d)")
                 .execute()
-                .print();  // 1 + 3 + 6 + 4 + 1  (a,b,c,d) (a,b,c)(a,b,d)(a,c,d)
+                .print();  // 1 + 4 + 6 + 4 + 1  (a,b,c,d) (a,b,c)(a,b,d)(a,c,d)
 
 
     }

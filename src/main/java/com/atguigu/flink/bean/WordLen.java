@@ -13,5 +13,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class WordLen {
     private String word;
-    private int len;
+    private Integer len;
 }

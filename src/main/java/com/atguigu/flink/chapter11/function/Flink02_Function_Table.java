@@ -9,7 +9,6 @@ import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.functions.TableFunction;
 
 import static org.apache.flink.table.api.Expressions.$;
-import static org.apache.flink.table.api.Expressions.call;
 
 /**
  * @Author lzc
@@ -18,7 +17,6 @@ import static org.apache.flink.table.api.Expressions.call;
 public class Flink02_Function_Table {
     public static void main(String[] args) {
         Configuration conf = new Configuration();
-        conf.setString("table.exec.sink.not-null-enforcer", "drop");
 
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment(conf);
 
@@ -30,6 +28,8 @@ public class Flink02_Function_Table {
 
 
         StreamTableEnvironment tEnv = StreamTableEnvironment.create(env);
+        // 删除有空值的数据
+//        tEnv.getConfig().getConfiguration().setString("table.exec.sink.not-null-enforcer", "drop");
 
         // 3. 把流转成一个表(动态表)
         Table table = tEnv.fromDataStream(stream, $("line"));
@@ -44,23 +44,59 @@ public class Flink02_Function_Table {
                 .execute()
                 .print();*/
         // 1.2 先注册后使用
-        tEnv.createTemporaryFunction("split", Split.class);
+        /*tEnv.createTemporaryFunction("split", Split.class);
         table
 //                .joinLateral(call("split", $("line")))// 默认是内连接
                 .leftOuterJoinLateral(call("split", $("line")))
                 .select($("line"), $("word"), $("len"))
                 .execute()
-                .print();
+                .print();*/
 
         // 2. 在sql中使用
         // 先注册
+        tEnv.createTemporaryFunction("split", Split.class);
+        /*tEnv
+                .sqlQuery("select " +
+                        " line," +
+                        "   w, " +
+                        "   l " +
+                        "from sensor " +
+                        "join lateral table(split(line)) as t(w, l) on true")
+                .execute()
+                .print();*/
+
+        // select .. from a join b on a.id=b.id
+        // select .. from a, b where a.id=b.id
+        /*tEnv
+                .sqlQuery("select " +
+                        " line," +
+                        "   word, " +
+                        "   len " +
+                        "from sensor " +
+                        ", lateral table(split(line))")
+                .execute()
+                .print();*/
+
+        tEnv
+                .sqlQuery("select " +
+                        " line," +
+                        "   word, " +
+                        "   len " +
+                        "from sensor " +
+                        "left outer join lateral table(split(line)) on true")
+                .execute()
+                .print();
 
     }
+
     // Row用来表示制成的表的每行数据的封装 也可以使用POJO
     // Row是一种弱类型, 需要明确的指定字段名和类型
     /*@FunctionHint(output = @DataTypeHint("row<word string, len int>"))
     public static class Split extends TableFunction<Row> {
         public void eval(String line){
+            if (line.contains("zs")) {
+                return;
+            }
             // 数组的长度是几, 制成的表就几行
             String[] words = line.split(" ");
             for (String word : words) {
@@ -71,7 +107,7 @@ public class Flink02_Function_Table {
     }*/
     // POJO是一种强类型, 每个字段的类型和名字都是和POJO中的属性保持了一致. 不用额外的配置
     public static class Split extends TableFunction<WordLen> {
-        public void eval(String line){
+        public void eval(String line) {
 
             // 一些特殊情况, 这个值不生成表
             if (line.contains("zs")) {
@@ -81,7 +117,6 @@ public class Flink02_Function_Table {
             // 数组的长度是几, 制成的表就几行
             String[] words = line.split(" ");
             for (String word : words) {
-                //of方法传入几个参数, 就表示一行有几列
                 collect(new WordLen(word, word.length()));  // 调用一次, 就有一行数据
             }
         }

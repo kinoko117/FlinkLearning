@@ -37,8 +37,10 @@ public class Flink02_UV {
                     Long.valueOf(data[4])
                 );
             })
+            
             .filter(ub -> "pv".equals(ub.getBehavior()))
             .keyBy(UserBehavior::getBehavior)
+            
             .process(new KeyedProcessFunction<String, UserBehavior, Long>() {
     
                 private ValueState<Long> sumState;

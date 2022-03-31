@@ -85,7 +85,8 @@ public class Flink02_UV {
             .print();
         
         //lala
-        //rarara
+
+        //gigi
         try {
             env.execute();
         } catch (Exception e) {

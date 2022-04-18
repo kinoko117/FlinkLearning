@@ -4,6 +4,7 @@ import com.atguigu.flink.bean.WaterSensor;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.table.api.Expressions;
 import org.apache.flink.table.api.Over;
 import org.apache.flink.table.api.OverWindow;
 import org.apache.flink.table.api.Table;
@@ -46,7 +47,7 @@ public class Flink13_Window_Over_1 {
 
         // rank(xx) over(partition by id order by count rows between unbounded preceding and current row)
 
-//        OverWindow w = Over.partitionBy($("id")).orderBy($("ts")).preceding(Expressions.UNBOUNDED_ROW).as("win");
+//       OverWindow w = Over.partitionBy($("id")).orderBy($("ts")).preceding(Expressions.UNBOUNDED_ROW).as("win");
 //        OverWindow w = Over.partitionBy($("id")).orderBy($("ts")).preceding(rowInterval(1L)).as("win");
 //        OverWindow w = Over.partitionBy($("id")).orderBy($("ts")).preceding(UNBOUNDED_RANGE).as("win");
         OverWindow w = Over.partitionBy($("id")).orderBy($("ts")).preceding(lit(2).second()).as("win");

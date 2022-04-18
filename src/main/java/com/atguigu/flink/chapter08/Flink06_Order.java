@@ -55,7 +55,7 @@ public class Flink06_Order {
                                 .withTimestampAssigner((event, ts) -> event.getEventTime())
                 )
                 .keyBy(OrderEvent::getOrderId)
-                .window(EventTimeSessionWindows.withGap(Time.minutes(45L)))
+                .window(EventTimeSessionWindows.withGap(Time.minutes(15L)))
                 .process(new ProcessWindowFunction<OrderEvent, String, Long, TimeWindow>() {
 
                     private ValueState<OrderEvent> createState;

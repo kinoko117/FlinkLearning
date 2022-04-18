@@ -2,17 +2,24 @@ package com.atguigu.flink.chapter07.watermark;
 
 import com.atguigu.flink.bean.WaterSensor;
 import com.atguigu.flink.util.AtguiguUtil;
+import org.apache.flink.api.common.ExecutionConfig;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
+import org.apache.flink.api.common.typeutils.TypeSerializer;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.assigners.WindowAssigner;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.triggers.ContinuousEventTimeTrigger;
+import org.apache.flink.streaming.api.windowing.triggers.Trigger;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.streaming.api.windowing.windows.Window;
 import org.apache.flink.util.Collector;
 
 import java.time.Duration;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -27,7 +34,7 @@ public class Flink04_Watermark_AllowLate {
         env.setParallelism(1);
 
         env
-                .socketTextStream("hadoop162", 9999)
+                .socketTextStream("hadoop102", 9999)
                 .map(value -> {
                     String[] data = value.split(",");
                     return new WaterSensor(
@@ -49,7 +56,7 @@ public class Flink04_Watermark_AllowLate {
                                 .withIdleness(Duration.ofSeconds(10))   // 防止数据倾斜带来的水印不更新
                 )
                 .keyBy(WaterSensor::getId)
-                .window(TumblingEventTimeWindows.of(Time.seconds(5)))
+                .window(TumblingEventTimeWindows.of(Time.seconds(3)))
                 .allowedLateness(Time.seconds(2))
                 .process(new ProcessWindowFunction<WaterSensor, String, String, TimeWindow>() {
                     @Override
